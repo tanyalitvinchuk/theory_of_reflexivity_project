@@ -48,7 +48,6 @@ for ticker in magnificent_seven:
     temporary_dictionary["percent_difference_from_52_week_low"] = percent_difference_from_52_week_low
     temporary_dictionary["percent_difference_from_52_week_high"] = percent_difference_from_52_week_high
     stock_data.append(temporary_dictionary)
-print(stock_data)
 
 # Creating a CSV file with dictionary keys as headers
 
@@ -57,7 +56,6 @@ with open("stock_data.csv", "w") as stock_data_file:
     for item in stock_data[0].keys():
         header_str += item + ","
     header_str = header_str.strip(",")
-    print(header_str)
     stock_data_file.write(header_str+"\n")
 
     for dictionary in stock_data:
