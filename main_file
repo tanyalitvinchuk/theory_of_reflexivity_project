@@ -11,7 +11,6 @@ for i in range(len(sp500_tickers)):
         sp500_tickers[i] = "BRK-B"
     elif sp500_tickers[i] == "BF.B":
         sp500_tickers[i] = "BF-B"
-
 sp400_tickers = pd.read_html(
     'https://en.wikipedia.org/wiki/List_of_S%26P_400_companies')[0]['Symbol'].tolist()
 
