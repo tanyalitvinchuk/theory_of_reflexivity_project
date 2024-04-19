@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import csv
+import mysql.connector
 
 
 # Tickers' Lists ---------------------------------------------------------------------------------------
@@ -53,9 +54,9 @@ for ticker in sp500_tickers:
             temporary_dictionary[field] = "N/A"
 
     stock_data.append(temporary_dictionary)
-    print(str(sp500_tickers.index(ticker)) + " is added to the list of dictionaries")
+    
 
-# Creating a CSV file with dictionary keys as headers
+# Creating a CSV file
 
 with open("stock_data.csv", "w") as stock_data_file:
     header_str = ""
@@ -67,4 +68,22 @@ with open("stock_data.csv", "w") as stock_data_file:
     for dictionary in stock_data:
         string = str(dictionary['symbol']) + "," + str(dictionary['shortName']) + "," + str(dictionary['industry']) + "," + str(dictionary['sector']) + "," + str(dictionary['previousClose']) + "," + str(dictionary['fiftyTwoWeekLow']) + "," + str(dictionary['fiftyTwoWeekHigh']) + "," + str(dictionary['fiftyDayAverage']) + "," + str(dictionary['twoHundredDayAverage']) + "," + str(dictionary['percent_difference_from_52_week_low']) + "," + str(dictionary['percent_difference_from_52_week_high'])
         stock_data_file.write(string+"\n")
-        print("added")
+        
+# Creating a MySQL database with 6 fields
+
+mydb = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="ukrainewillwin",
+    database="mydatabase"
+)
+
+mycursor = mydb.cursor()
+for dictionary in stock_data:
+    sql = "INSERT INTO stock_data (symbol, previousClose, fiftyTwoWeekLow, fiftyTwoWeekHigh, percent_difference_from_52_week_low, percent_difference_from_52_week_high) VALUES (%s, %s, %s, %s, %s, %s)"
+    val = (dictionary['symbol'], dictionary['previousClose'],dictionary['fiftyTwoWeekLow'],dictionary['fiftyTwoWeekHigh'],dictionary['percent_difference_from_52_week_low'],dictionary['percent_difference_from_52_week_high'])
+    mycursor.execute(sql, val)
+    mydb.commit()
+
+
+
