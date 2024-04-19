@@ -85,5 +85,12 @@ for dictionary in stock_data:
     mycursor.execute(sql, val)
     mydb.commit()
 
+# Creating a MySQL database with data for each day of the year
+for company in big_list:
+    data = yf.download(company, start = '2023-04-19', end = '2024-04-19')
+    for index, row in data.iterrows():
+        insert_query = f"INSERT INTO stockprices (date, open, high, low, close, adj_close, volume, symbol) VALUES ('{index.strftime('%Y-%m-%d')}', {row['Open']}, {row['High']}, {row['Low']}, {row['Close']}, {row['Adj Close']}, {row['Volume']}, '{company}');"
+        mycursor.execute(insert_query)
 
+mydb.commit()
 
