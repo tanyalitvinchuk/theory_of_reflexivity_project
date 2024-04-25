@@ -72,7 +72,7 @@ mycursor = mydb.cursor()
 mycursor.execute("DROP TABLE IF EXISTS stockData")
 mycursor.execute("CREATE TABLE stockData (symbol VARCHAR(255), shortName VARCHAR(255), country VARCHAR(255), industry VARCHAR(255), sector VARCHAR(255), previousClose DECIMAL(10,4), beta DECIMAL(10,4), trailingPE DECIMAL(10,4), forwardPE DECIMAL(10,4), volume BIGINT, averageVolume BIGINT, averageVolume10days BIGINT, marketCap BIGINT, fiftyTwoWeekLow DECIMAL(10,4), fiftyTwoWeekHigh DECIMAL(10,4), fiftyDayAverage DECIMAL(10,4), twoHundredDayAverage DECIMAL(10,4), bookValue DECIMAL(10,4), priceToBook DECIMAL(10,4), 52WeekChange DECIMAL(10,4), percentDifferenceFrom52WeekLow DECIMAL(10,4), percentDifferenceFrom52WeekHigh DECIMAL(10,4))")
 
-for dictionary in stockData:
+for dictionary in stock_data:
     sql = "INSERT INTO stockData (symbol, shortName, country, industry, sector, previousClose, beta, trailingPE, forwardPE, volume, averageVolume, averageVolume10days, marketCap, fiftyTwoWeekLow, fiftyTwoWeekHigh, fiftyDayAverage, twoHundredDayAverage, bookValue, priceToBook, 52WeekChange, percentDifferenceFrom52WeekLow, percentDifferenceFrom52WeekHigh) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     val = (
         dictionary['symbol'],
