@@ -115,7 +115,7 @@ mydb.commit()
 #Creating table stockPrices
 
 mycursor.execute("DROP TABLE IF EXISTS stockPrices")
-mycursor.execute("CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT)")
+mycursor.execute("CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT, FOREIGN KEY (symbol) REFERENCES stockData(symbol))")
 
 for company in big_list:
     data = yf.download(company, start='2023-04-19', end='2024-04-19')
@@ -125,4 +125,3 @@ for company in big_list:
         mycursor.execute(insert_query, insert_values)
 
 mydb.commit()
-
