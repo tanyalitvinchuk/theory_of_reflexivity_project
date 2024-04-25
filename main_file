@@ -117,8 +117,12 @@ mydb.commit()
 mycursor.execute("DROP TABLE IF EXISTS stockPrices")
 mycursor.execute("CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT, FOREIGN KEY (symbol) REFERENCES stockData(symbol))")
 
+today = datetime.date.today()
+start = today - datetime.timedelta(days=365)
+end = today.strftime('%Y-%m-%d')
+
 for company in big_list:
-    data = yf.download(company, start='2023-04-19', end='2024-04-19')
+    data = yf.download(company, start=start, end=end)
     for index, row in data.iterrows():
         insert_query = "INSERT INTO stockPrices (date, symbol, open, high, low, close, adjustedClose, volume) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
         insert_values = (index.strftime('%Y-%m-%d'), company, float(row['Open']), float(row['High']), float(row['Low']), float(row['Close']), float(row['Adj Close']), int(row['Volume']))
