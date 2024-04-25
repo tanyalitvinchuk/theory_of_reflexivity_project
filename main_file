@@ -68,6 +68,7 @@ for ticker in big_list:
     stock_data.append(temporary_dictionary)
     print(len(stock_data))
 
+#Creating table stockData
 
 mydb = mysql.connector.connect(
     host="localhost",
@@ -111,12 +112,17 @@ for dictionary in stock_data:
 
 mydb.commit()
 
-# Creating a MySQL database with data for each day of the year
+#Creating table stockPrices
+
+mycursor.execute("DROP TABLE IF EXISTS stockPrices")
+mycursor.execute("CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT)")
+
 for company in big_list:
-    data = yf.download(company, start = '2023-04-19', end = '2024-04-19')
+    data = yf.download(company, start='2023-04-19', end='2024-04-19')
     for index, row in data.iterrows():
-        insert_query = f"INSERT INTO stockprices (date, open, high, low, close, adj_close, volume, symbol) VALUES ('{index.strftime('%Y-%m-%d')}', {row['Open']}, {row['High']}, {row['Low']}, {row['Close']}, {row['Adj Close']}, {row['Volume']}, '{company}');"
-        mycursor.execute(insert_query)
+        insert_query = "INSERT INTO stockPrices (date, symbol, open, high, low, close, adjustedClose, volume) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        insert_values = (index.strftime('%Y-%m-%d'), company, float(row['Open']), float(row['High']), float(row['Low']), float(row['Close']), float(row['Adj Close']), int(row['Volume']))
+        mycursor.execute(insert_query, insert_values)
 
 mydb.commit()
 
