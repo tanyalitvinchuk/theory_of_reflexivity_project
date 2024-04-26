@@ -53,7 +53,7 @@ for ticker in big_list:
     for k, v in yf.Ticker(ticker).info.items():
         if k in list_of_fields:
             if k in sublist_of_fields:
-                if isinstance(v, str):
+                if type(v) == str:
                     temporary_dictionary[k] = None
                 else:
                     temporary_dictionary[k] = v
