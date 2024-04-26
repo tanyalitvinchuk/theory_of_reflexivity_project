@@ -116,6 +116,7 @@ for dictionary in stock_data:
 mydb.commit()
 
 #Creating CSV file stockData (csv files may be needed for simpler visualization tools)----------------------------------
+
 with open('stockData.csv', mode='w', newline='') as stockDataFile:
     writer = csv.DictWriter(stockDataFile, fieldnames=stock_data[0].keys(), delimiter=';')
     writer.writeheader()
