@@ -82,7 +82,7 @@ for ticker in big_list:
 mydb = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="ukrainewillwin",
+    password="password",
     database="mydatabase"
 )
 
