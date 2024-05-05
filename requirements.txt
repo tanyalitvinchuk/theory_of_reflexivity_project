@@ -1,0 +1,2 @@
+yfinance==0.2.38
+mysql-connector-python==8.0.25

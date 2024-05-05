@@ -1,3 +1,5 @@
+#!/bin/python
+
 import yfinance as yf
 import pandas as pd
 import csv
@@ -32,6 +34,8 @@ for i in range(len(sp600_tickers)):
         continue
     else:
         sp600_tickers[i] = sp600_tickers[i].replace(".", "-")
+
+        
 
 magnificent_seven = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"]
 bitcoin = ["GBTC","IBIT", "FBTC", "ARKB", "BITB", "BTCO", "HODL", "BRRR", "MARA", "COIN", "MSTR"]
