@@ -7,7 +7,8 @@ import mysql.connector
 import datetime
 
 
-# Defining class Tickers that is used to return lists of tickers
+# Defining class Tickers that is used to return lists of tickers---------------------------------------------------------------------------
+
 class Tickers:
     def __init__(self):
         self.sp500url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
@@ -66,52 +67,66 @@ class Tickers:
             return list(set((self.get_tickers_list(
                 'sp_1500') + self.magnificent_seven + self.bitcoin + self.meme_stocks + self.ai_stocks + self.obesity_drugs)))
 
-# Getting the data needed for table stockData from yfinance into a list of dictionaries ----------------------------------------------------
-tickers_list = Tickers().get_tickers_list("sp500_tickers")
 
-stock_data = []
-list_of_fields = ['symbol', 'shortName', 'country', 'industry', 'sector', 'previousClose', 'beta', 'trailingPE',
-                  'forwardPE', 'volume', 'averageVolume', 'averageVolume10days', 'marketCap', 'fiftyTwoWeekLow',
-                  'fiftyTwoWeekHigh', 'fiftyDayAverage', 'twoHundredDayAverage', 'bookValue', '52WeekChange',
-                  'priceToBook']
-# This sublist is for checking if fields that should be numerical are numerical and not strings
-sublist_of_fields = ['previousClose', 'beta', 'trailingPE', 'forwardPE', 'volume', 'averageVolume',
-                     'averageVolume10days', 'marketCap', 'fiftyTwoWeekLow', 'fiftyTwoWeekHigh', 'fiftyDayAverage',
-                     'twoHundredDayAverage', 'bookValue', '52WeekChange', 'priceToBook']
-for ticker in tickers_list:
-    temporary_dictionary = {}
-    for k, v in yf.Ticker(ticker).info.items():
-        if k in list_of_fields:
-            if k in sublist_of_fields:
-                if type(v) == str:
-                    temporary_dictionary[k] = None
-                else:
-                    temporary_dictionary[k] = v
+# Defining class StockData that is used to get data from yfinance.info into the list of dictionaries for the first table------------------------------------------
+
+class GetStockData:
+    def __init__(self, type: str):
+        self.tickers_list = Tickers().get_tickers_list(type)
+        self.sp500_tickers = Tickers().get_tickers_list("sp500_tickers")
+        self.sp400_tickers = Tickers().get_tickers_list("sp400_tickers")
+        self.sp600_tickers = Tickers().get_tickers_list("sp600_tickers")
+        self.stock_data = []
+        self.list_of_fields = ['symbol', 'shortName', 'country', 'industry', 'sector', 'previousClose', 'beta',
+                               'trailingPE', 'forwardPE', 'volume', 'averageVolume', 'averageVolume10days', 'marketCap',
+                               'fiftyTwoWeekLow', 'fiftyTwoWeekHigh', 'fiftyDayAverage', 'twoHundredDayAverage',
+                               'bookValue', '52WeekChange', 'priceToBook']
+        # This sublist is for checking if fields that should be numerical are numerical and not strings
+        self.sublist_of_fields = ['previousClose', 'beta', 'trailingPE', 'forwardPE', 'volume', 'averageVolume',
+                                  'averageVolume10days', 'marketCap', 'fiftyTwoWeekLow', 'fiftyTwoWeekHigh',
+                                  'fiftyDayAverage', 'twoHundredDayAverage', 'bookValue', '52WeekChange', 'priceToBook']
+        self.getting_the_data()
+
+    def getting_the_data(self):
+        for ticker in self.tickers_list:
+            temporary_dictionary = {}
+            for k, v in yf.Ticker(ticker).info.items():
+                if k in self.list_of_fields:
+                    if k in self.sublist_of_fields:
+                        if type(v) == str:
+                            temporary_dictionary[k] = None
+                        else:
+                            temporary_dictionary[k] = v
+                    else:
+                        temporary_dictionary[k] = v
+
+            for item in self.list_of_fields:
+                if item not in temporary_dictionary.keys():
+                    temporary_dictionary[item] = None
+
+            percent_difference_from_52_week_low = temporary_dictionary['previousClose'] / temporary_dictionary[
+                'fiftyTwoWeekLow'] - 1
+            percent_difference_from_52_week_high = temporary_dictionary['previousClose'] / temporary_dictionary[
+                'fiftyTwoWeekHigh'] - 1
+            temporary_dictionary['percentDifferenceFrom52WeekLow'] = percent_difference_from_52_week_low
+            temporary_dictionary['percentDifferenceFrom52WeekHigh'] = percent_difference_from_52_week_high
+
+            if ticker in self.sp500_tickers:
+                temporary_dictionary['spGroup'] = '500'
+            elif ticker in self.sp400_tickers:
+                temporary_dictionary['spGroup'] = '400'
+            elif ticker in self.sp600_tickers:
+                temporary_dictionary['spGroup'] = '600'
             else:
-                temporary_dictionary[k] = v
-    for item in list_of_fields:
-        if item not in temporary_dictionary.keys():
-            temporary_dictionary[item] = None
+                temporary_dictionary['spGroup'] = 'Other'
 
-    percent_difference_from_52_week_low = temporary_dictionary['previousClose'] / temporary_dictionary[
-        'fiftyTwoWeekLow'] - 1
-    percent_difference_from_52_week_high = temporary_dictionary['previousClose'] / temporary_dictionary[
-        'fiftyTwoWeekHigh'] - 1
-    temporary_dictionary['percentDifferenceFrom52WeekLow'] = percent_difference_from_52_week_low
-    temporary_dictionary['percentDifferenceFrom52WeekHigh'] = percent_difference_from_52_week_high
-    sp500_tickers = Tickers().get_tickers_list("sp500_tickers")
-    sp400_tickers = Tickers().get_tickers_list("sp400_tickers")
-    sp600_tickers = Tickers().get_tickers_list("sp600_tickers")
-    if ticker in sp500_tickers:
-        temporary_dictionary['spGroup'] = '500'
-    elif ticker in sp400_tickers:
-        temporary_dictionary['spGroup'] = '400'
-    elif ticker in sp600_tickers:
-        temporary_dictionary['spGroup'] = '600'
-    else:
-        temporary_dictionary['spGroup'] = 'Other'
-    stock_data.append(temporary_dictionary)
-    print(len(stock_data))
+            self.stock_data.append(temporary_dictionary)
+            if temporary_dictionary['symbol'] is None:
+                print(temporary_dictionary, len(self.stock_data))
+
+
+
+stock_data = GetStockData("sp500_tickers").stock_data
 
 # Creating table stockData-----------------------------------------------------------------------------------------------
 
@@ -178,6 +193,7 @@ start = today - datetime.timedelta(days=365)
 end = today.strftime('%Y-%m-%d')
 
 fieldnames = ['date', 'symbol', 'open', 'high', 'low', 'close', 'adjustedClose', 'volume']
+tickers_list = Tickers().get_tickers_list("sp500_tickers")
 with open('stockPrices.csv', mode='w', newline='') as csvfile:
     csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=';')
     csv_writer.writeheader()
@@ -187,8 +203,8 @@ with open('stockPrices.csv', mode='w', newline='') as csvfile:
         for index, row in data.iterrows():
             insert_query = "INSERT INTO stockPrices (date, symbol, open, high, low, close, adjustedClose, volume) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
             insert_values = (
-            index.strftime('%Y-%m-%d'), company, float(row['Open']), float(row['High']), float(row['Low']),
-            float(row['Close']), float(row['Adj Close']), int(row['Volume']))
+                index.strftime('%Y-%m-%d'), company, float(row['Open']), float(row['High']), float(row['Low']),
+                float(row['Close']), float(row['Adj Close']), int(row['Volume']))
             mycursor.execute(insert_query, insert_values)
 
             csv_writer.writerow({
