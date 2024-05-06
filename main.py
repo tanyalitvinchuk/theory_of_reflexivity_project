@@ -6,7 +6,7 @@ import csv
 import mysql.connector
 import datetime
 
-
+tickers = 'sp500_tickers'
 # Defining class Tickers that is used to return lists of tickers-----------------------------------------------------
 
 class Tickers:
@@ -81,10 +81,19 @@ class GetStockData:
                 if item not in temporary_dictionary.keys():
                     temporary_dictionary[item] = None
 
-            percent_difference_from_52_week_low = temporary_dictionary['previousClose'] / temporary_dictionary[
-                'fiftyTwoWeekLow'] - 1
-            percent_difference_from_52_week_high = temporary_dictionary['previousClose'] / temporary_dictionary[
-                'fiftyTwoWeekHigh'] - 1
+            previous_close = temporary_dictionary['previousClose']
+            fifty_two_week_low = temporary_dictionary['fiftyTwoWeekLow']
+            fifty_two_week_high = temporary_dictionary['fiftyTwoWeekHigh']
+
+            percent_difference_from_52_week_low = None
+            percent_difference_from_52_week_high = None
+
+            if previous_close is not None and fifty_two_week_low is not None:
+                percent_difference_from_52_week_low = (previous_close / fifty_two_week_low) - 1
+
+            if previous_close is not None and fifty_two_week_high is not None:
+                percent_difference_from_52_week_high = (previous_close / fifty_two_week_high) - 1
+
             temporary_dictionary['percentDifferenceFrom52WeekLow'] = percent_difference_from_52_week_low
             temporary_dictionary['percentDifferenceFrom52WeekHigh'] = percent_difference_from_52_week_high
 
@@ -174,7 +183,7 @@ class DatabaseTables:
         end = today.strftime('%Y-%m-%d')
 
         fieldnames = ['date', 'symbol', 'open', 'high', 'low', 'close', 'adjustedClose', 'volume']
-        tickers_list = Tickers().get_tickers_list("sp500_tickers")
+        tickers_list = Tickers().get_tickers_list(tickers)
         with open('stockPrices.csv', mode='w', newline='') as csvfile:
             csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=';')
             csv_writer.writeheader()
@@ -201,4 +210,4 @@ class DatabaseTables:
                 self.mydb.commit()
 
 
-a = DatabaseTables('sp500_stocks')
+a = DatabaseTables(tickers)
