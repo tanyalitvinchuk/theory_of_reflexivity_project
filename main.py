@@ -17,7 +17,7 @@ class Tickers:
         self.magnificent_seven = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"]
         self.bitcoin = ["GBTC", "IBIT", "FBTC", "ARKB", "BITB", "BTCO", "HODL", "BRRR", "MARA", "COIN", "MSTR"]
         self.meme_stocks = ["DJT", "AISP", "NKLA", "RDDT", "CVNA"]
-        self.ai_stocks = ["NVDA", "ARM", "AMD", "META", "GOOGL", "MSFT", "SMCI", "CRM", "ADBE", "GOAI", "AIAI.L", "WTAI"]
+        self.ai_stocks = ["NVDA", "ARM", "AMD", "META", "GOOGL", "MSFT", "SMCI", "CRM", "ADBE", "GOAI", "WTAI"]
         self.obesity_drugs = ["NVO", "LLY"]
         self.other_tickers = ['TMST','AMEH','TSLA','AAPL'] # For checking some tickers
         self.tickers_cache = {}
