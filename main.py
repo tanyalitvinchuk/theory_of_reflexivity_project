@@ -122,8 +122,7 @@ class GetStockData:
 class DatabaseTables:
     def __init__(self,type):
         self.stock_data = GetStockData(type).stock_data
-        print(self.stock_data)
-
+        
         self.mydb = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -184,13 +183,13 @@ class DatabaseTables:
     def create_table_stockprices(self):
         self.mycursor.execute("DROP TABLE IF EXISTS stockPrices")
         self.mycursor.execute(
-            "CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT, 52WeekLow DECIMAL (10,4), 52WeekHigh DECIMAL (10,4))")
+            "CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT, fiftyTwoWeekLow DECIMAL(10,4), fiftyTwoWeekHigh DECIMAL(10,4), percentDifferenceFrom52WeekLow DECIMAL(10,4), percentDifferenceFrom52WeekHigh DECIMAL(10,4))")
 
         today = datetime.date.today()
         start = today - datetime.timedelta(days=365)
         end = today.strftime('%Y-%m-%d')
 
-        fieldnames = ['date', 'symbol', 'open', 'high', 'low', 'close', 'adjustedClose', 'volume', '52WeekLow', '52WeekHigh']
+        fieldnames = ['date', 'symbol', 'open', 'high', 'low', 'close', 'adjustedClose', 'volume', 'fiftyTwoWeekLow', 'fiftyTwoWeekHigh', 'percentDifferenceFrom52WeekLow', 'percentDifferenceFrom52WeekHigh']
         tickers_list = Tickers().get_tickers_list(tickers)
         with open('stockPrices.csv', mode='w', newline='') as csvfile:
             csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=';')
@@ -198,12 +197,16 @@ class DatabaseTables:
 
             for company in tickers_list:
                 data = yf.download(company, start=start, end=end)
+                fiftyTwoWeekLow = float(self.stock_data[company]['fiftyTwoWeekLow'])
+                fiftyTwoWeekHigh = float(self.stock_data[company]['fiftyTwoWeekHigh'])
 
                 for index, row in data.iterrows():
-                    insert_query = "INSERT INTO stockPrices (date, symbol, open, high, low, close, adjustedClose, volume, fiftyTwoWeekLow, fiftyTwoWeekHigh) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    percentDifferenceFrom52WeekLow = (float(row['Close']) / fiftyTwoWeekLow) - 1
+                    percentDifferenceFrom52WeekHigh = (float(row['Close']) / fiftyTwoWeekHigh) - 1
+                    insert_query = "INSERT INTO stockPrices (date, symbol, open, high, low, close, adjustedClose, volume, fiftyTwoWeekLow, fiftyTwoWeekHigh, percentDifferenceFrom52WeekLow, percentDifferenceFrom52WeekHigh) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                     insert_values = (
                         index.strftime('%Y-%m-%d'), company, float(row['Open']), float(row['High']), float(row['Low']),
-                        float(row['Close']), float(row['Adj Close']), int(row['Volume']), float(self.stock_data[company]['fiftyTwoWeekLow']), float(self.stock_data[company]['fiftyTwoWeekHigh']))
+                        float(row['Close']), float(row['Adj Close']), int(row['Volume']), fiftyTwoWeekLow, fiftyTwoWeekHigh, percentDifferenceFrom52WeekLow, percentDifferenceFrom52WeekHigh)
                     self.mycursor.execute(insert_query, insert_values)
 
                     csv_writer.writerow({
@@ -215,8 +218,10 @@ class DatabaseTables:
                         'close': float(row['Close']),
                         'adjustedClose': float(row['Adj Close']),
                         'volume': int(row['Volume']),
-                        '52WeekLow': float(self.stock_data[company]['fiftyTwoWeekLow']),
-                        '52WeekHigh': float(self.stock_data[company]['fiftyTwoWeekHigh'])
+                        'fiftyTwoWeekLow': fiftyTwoWeekLow,
+                        'fiftyTwoWeekHigh': fiftyTwoWeekHigh,
+                        'percentDifferenceFrom52WeekLow': percentDifferenceFrom52WeekLow,
+                        'percentDifferenceFrom52WeekHigh': percentDifferenceFrom52WeekHigh
                     })
                 self.mydb.commit()
 
