@@ -1,0 +1,12 @@
+
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "austin",
+            "file": "main.py",
+            "args": ["--verbose"],
+            "label": "Profile main.py"
+        }
+    ]
+}
