@@ -17,49 +17,33 @@ class Tickers:
         self.magnificent_seven = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"]
         self.bitcoin = ["GBTC", "IBIT", "FBTC", "ARKB", "BITB", "BTCO", "HODL", "BRRR", "MARA", "COIN", "MSTR"]
         self.meme_stocks = ["DJT", "AISP", "NKLA", "RDDT", "CVNA"]
-        self.ai_stocks = ["NVDA", "ARM", "AMD", "META", "GOOGL", "MSFT", "SMCI", "CRM", "ADBE", "GOAI", "AIAI.L",
-                          "WTAI"]
+        self.ai_stocks = ["NVDA", "ARM", "AMD", "META", "GOOGL", "MSFT", "SMCI", "CRM", "ADBE", "GOAI", "AIAI.L", "WTAI"]
         self.obesity_drugs = ["NVO", "LLY"]
-        self.sp500_tickers = None
-        self.sp400_tickers = None
-        self.sp600_tickers = None
+        self.tickers_cache = {}
 
     def __str__(self):
         return "Available tickers' lists are: 'sp500_tickers', 'sp400_tickers', 'sp600_tickers', 'sp_1500', " \
                "'magnificent_seven', 'bitcoin', 'meme_stocks','ai_stocks','obesity_drugs'"
 
+    def fetch_tickers(self, url):
+        if url not in self.tickers_cache:
+            data = pd.read_html(url)[0]['Symbol'].tolist()
+            self.tickers_cache[url] = [ticker.replace(".", "-") for ticker in data]
+        return self.tickers_cache[url]
+
     def get_tickers_list(self, type: str):
         if type == 'sp500_tickers':
-            if self.sp500_tickers is None:
-                self.sp500_tickers = pd.read_html(self.sp500url)[0]['Symbol'].tolist()
-                self.sp500_tickers = [ticker.replace(".", "-") for ticker in self.sp500_tickers]
-            return self.sp500_tickers
+            return self.fetch_tickers(self.sp500url)
         elif type == 'sp400_tickers':
-            if self.sp400_tickers is None:
-                self.sp400_tickers = pd.read_html(self.sp400url)[0]['Symbol'].tolist()
-                self.sp400_tickers = [ticker.replace(".", "-") for ticker in self.sp400_tickers]
-            return self.sp400_tickers
+            return self.fetch_tickers(self.sp400url)
         elif type == 'sp600_tickers':
-            if self.sp600_tickers is None:
-                self.sp600_tickers = pd.read_html(self.sp600url)[0]['Symbol'].tolist()
-                self.sp600_tickers = [ticker.replace(".", "-") for ticker in self.sp600_tickers]
-            return self.sp600_tickers
+            return self.fetch_tickers(self.sp600url)
         elif type == 'sp_1500':
-            return self.get_tickers_list('sp500_tickers') + self.get_tickers_list(
-                'sp400_tickers') + self.get_tickers_list('sp600_tickers')
-        elif type == 'magnificent_seven':
-            return self.magnificent_seven
-        elif type == 'bitcoin':
-            return self.bitcoin
-        elif type == 'meme_stocks':
-            return self.meme_stocks
-        elif type == 'ai_stocks':
-            return self.ai_stocks
-        elif type == 'obesity_drugs':
-            return self.obesity_drugs
+            return self.get_tickers_list('sp500_tickers') + self.get_tickers_list('sp400_tickers') + self.get_tickers_list('sp600_tickers')
         elif type == 'big_list':
-            return list(set((self.get_tickers_list(
-                'sp_1500') + self.magnificent_seven + self.bitcoin + self.meme_stocks + self.ai_stocks + self.obesity_drugs)))
+            return list(set(self.get_tickers_list('sp_1500') + self.magnificent_seven + self.bitcoin + self.meme_stocks + self.ai_stocks + self.obesity_drugs))
+        else:
+            return getattr(self, type, [])
 
 # Defining class StockData that is used to get data from yfinance.info into the list of dictionaries for the first table------------------------------------------
 
@@ -114,6 +98,7 @@ class GetStockData:
                 temporary_dictionary['spGroup'] = 'Other'
 
             self.stock_data.append(temporary_dictionary)
+            print(len(self.stock_data))
 
 
 # Defining class DatabaseTables that is used to write the data to two database tables and also to csv files-------------
@@ -216,4 +201,4 @@ class DatabaseTables:
                 self.mydb.commit()
 
 
-a = DatabaseTables('sp500_tickers')
+a = DatabaseTables('sp500_stocks')
