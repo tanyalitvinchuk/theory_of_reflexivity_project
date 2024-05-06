@@ -6,7 +6,7 @@ import csv
 import mysql.connector
 import datetime
 
-tickers = 'sp500_tickers'
+
 # Defining class Tickers that is used to return lists of tickers-----------------------------------------------------
 
 class Tickers:
@@ -19,11 +19,12 @@ class Tickers:
         self.meme_stocks = ["DJT", "AISP", "NKLA", "RDDT", "CVNA"]
         self.ai_stocks = ["NVDA", "ARM", "AMD", "META", "GOOGL", "MSFT", "SMCI", "CRM", "ADBE", "GOAI", "AIAI.L", "WTAI"]
         self.obesity_drugs = ["NVO", "LLY"]
+        self.other_tickers = ['TMST','AMEH','TSLA','AAPL'] # For checking some tickers
         self.tickers_cache = {}
 
     def __str__(self):
         return "Available tickers' lists are: 'sp500_tickers', 'sp400_tickers', 'sp600_tickers', 'sp_1500', " \
-               "'magnificent_seven', 'bitcoin', 'meme_stocks','ai_stocks','obesity_drugs'"
+               "'magnificent_seven', 'bitcoin', 'meme_stocks','ai_stocks','obesity_drugs', 'big_list', 'other_tickers'"
 
     def fetch_tickers(self, url):
         if url not in self.tickers_cache:
@@ -54,6 +55,8 @@ class GetStockData:
         self.sp400_tickers = Tickers().get_tickers_list("sp400_tickers")
         self.sp600_tickers = Tickers().get_tickers_list("sp600_tickers")
         self.stock_data = []
+        self.available_tickers = []
+        self.unavailable_tickers = []
         self.list_of_fields = ['symbol', 'shortName', 'country', 'industry', 'sector', 'previousClose', 'beta',
                                'trailingPE', 'forwardPE', 'volume', 'averageVolume', 'averageVolume10days', 'marketCap',
                                'fiftyTwoWeekLow', 'fiftyTwoWeekHigh', 'fiftyDayAverage', 'twoHundredDayAverage',
@@ -105,9 +108,13 @@ class GetStockData:
                 temporary_dictionary['spGroup'] = '600'
             else:
                 temporary_dictionary['spGroup'] = 'Other'
-
-            self.stock_data.append(temporary_dictionary)
-            print(len(self.stock_data))
+            if temporary_dictionary['symbol'] is None:
+                self.unavailable_tickers.append(ticker)
+            else:
+                self.stock_data.append(temporary_dictionary)
+                self.available_tickers.append(ticker)
+                print(len(self.stock_data))
+        print(f"Unavailable tickers: {self.unavailable_tickers}")
 
 
 # Defining class DatabaseTables that is used to write the data to two database tables and also to csv files-------------
@@ -209,5 +216,14 @@ class DatabaseTables:
                     })
                 self.mydb.commit()
 
+
+dictionary_for_choosing_tickers = {1:'sp500_tickers', 2:'sp400_tickers', 3:'sp600_tickers', 4:'sp_1500', 5:'magnificent_seven',
+                               6:'bitcoin', 7:'meme_stocks', 8:'ai_stocks', 9:'obesity_drugs', 10:'big_list',
+                               11:'other_tickers'}
+
+print("Please, enter a number corresponding to the tickers list you want to use. \nAvailable options are:")
+for k, v in dictionary_for_choosing_tickers.items():
+    print(f" {k} - {v};")
+tickers = dictionary_for_choosing_tickers[int(input("Your choice: "))]
 
 a = DatabaseTables(tickers)
