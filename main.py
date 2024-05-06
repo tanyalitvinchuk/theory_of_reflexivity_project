@@ -7,7 +7,7 @@ import mysql.connector
 import datetime
 
 
-# Defining class Tickers that is used to return lists of tickers---------------------------------------------------------------------------
+# Defining class Tickers that is used to return lists of tickers-----------------------------------------------------
 
 class Tickers:
     def __init__(self):
@@ -125,96 +125,104 @@ class GetStockData:
                 print(temporary_dictionary, len(self.stock_data))
 
 
+# Defining class DatabaseTables that is used to write the data to two database tables and also to csv files-------------
 
-stock_data = GetStockData("sp500_tickers").stock_data
+class DatabaseTables:
+    def __init__(self,type):
+        self.stock_data = GetStockData(type).stock_data
 
-# Creating table stockData-----------------------------------------------------------------------------------------------
+        self.mydb = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="ukrainewillwin",
+            database="mydatabase"
+        )
+        self.mycursor = self.mydb.cursor()
 
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="ukrainewillwin",
-    database="mydatabase"
-)
+        self.create_table_stockdata()
+        self.create_csv_stockdata()
+        self.create_table_stockprices()
 
-mycursor = mydb.cursor()
-mycursor.execute("SET FOREIGN_KEY_CHECKS = 0")
-mycursor.execute("DROP TABLE IF EXISTS stockData")
-mycursor.execute("SET FOREIGN_KEY_CHECKS = 1")
-mycursor.execute(
-    "CREATE TABLE stockData (symbol VARCHAR(255) PRIMARY KEY, shortName VARCHAR(255), country VARCHAR(255), industry VARCHAR(255), sector VARCHAR(255), previousClose DECIMAL(10,4), beta DECIMAL(10,4), trailingPE DECIMAL(10,4), forwardPE DECIMAL(10,4), volume BIGINT, averageVolume BIGINT, averageVolume10days BIGINT, marketCap BIGINT, fiftyTwoWeekLow DECIMAL(10,4), fiftyTwoWeekHigh DECIMAL(10,4), fiftyDayAverage DECIMAL(10,4), twoHundredDayAverage DECIMAL(10,4), bookValue DECIMAL(10,4), priceToBook DECIMAL(10,4), 52WeekChange DECIMAL(10,4), percentDifferenceFrom52WeekLow DECIMAL(10,4), percentDifferenceFrom52WeekHigh DECIMAL(10,4), spGroup VARCHAR(255))")
 
-for dictionary in stock_data:
-    sql = "INSERT INTO stockData (symbol, shortName, country, industry, sector, previousClose, beta, trailingPE, forwardPE, volume, averageVolume, averageVolume10days, marketCap, fiftyTwoWeekLow, fiftyTwoWeekHigh, fiftyDayAverage, twoHundredDayAverage, bookValue, priceToBook, 52WeekChange, percentDifferenceFrom52WeekLow, percentDifferenceFrom52WeekHigh, spGroup) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    val = (
-        dictionary['symbol'],
-        dictionary['shortName'],
-        dictionary['country'],
-        dictionary['industry'],
-        dictionary['sector'],
-        dictionary['previousClose'],
-        dictionary['beta'],
-        dictionary['trailingPE'],
-        dictionary['forwardPE'],
-        dictionary['volume'],
-        dictionary['averageVolume'],
-        dictionary['averageVolume10days'],
-        dictionary['marketCap'],
-        dictionary['fiftyTwoWeekLow'],
-        dictionary['fiftyTwoWeekHigh'],
-        dictionary['fiftyDayAverage'],
-        dictionary['twoHundredDayAverage'],
-        dictionary['bookValue'],
-        dictionary['priceToBook'],
-        dictionary['52WeekChange'],
-        dictionary['percentDifferenceFrom52WeekLow'],
-        dictionary['percentDifferenceFrom52WeekHigh'],
-        dictionary['spGroup']
-    )
-    mycursor.execute(sql, val)
-    mydb.commit()
 
-mydb.commit()
-# Creating CSV file stockData (csv files may be needed for simpler visualization tools)----------------------------------
-with open('stockData.csv', mode='w', newline='') as stockDataFile:
-    writer = csv.DictWriter(stockDataFile, fieldnames=stock_data[0].keys(), delimiter=';')
-    writer.writeheader()
-    for data in stock_data:
-        writer.writerow(data)
+    def create_table_stockdata(self):
+        self.mycursor.execute("SET FOREIGN_KEY_CHECKS = 0")
+        self.mycursor.execute("DROP TABLE IF EXISTS stockData")
+        self.mycursor.execute("SET FOREIGN_KEY_CHECKS = 1")
+        self.mycursor.execute(
+            "CREATE TABLE stockData (symbol VARCHAR(255) PRIMARY KEY, shortName VARCHAR(255), country VARCHAR(255), industry VARCHAR(255), sector VARCHAR(255), previousClose DECIMAL(10,4), beta DECIMAL(10,4), trailingPE DECIMAL(10,4), forwardPE DECIMAL(10,4), volume BIGINT, averageVolume BIGINT, averageVolume10days BIGINT, marketCap BIGINT, fiftyTwoWeekLow DECIMAL(10,4), fiftyTwoWeekHigh DECIMAL(10,4), fiftyDayAverage DECIMAL(10,4), twoHundredDayAverage DECIMAL(10,4), bookValue DECIMAL(10,4), priceToBook DECIMAL(10,4), 52WeekChange DECIMAL(10,4), percentDifferenceFrom52WeekLow DECIMAL(10,4), percentDifferenceFrom52WeekHigh DECIMAL(10,4), spGroup VARCHAR(255))")
 
-# Creating table stockPrices--------------------------------------------------------------------------------------------
+        for dictionary in self.stock_data:
+            sql = "INSERT INTO stockData (symbol, shortName, country, industry, sector, previousClose, beta, trailingPE, forwardPE, volume, averageVolume, averageVolume10days, marketCap, fiftyTwoWeekLow, fiftyTwoWeekHigh, fiftyDayAverage, twoHundredDayAverage, bookValue, priceToBook, 52WeekChange, percentDifferenceFrom52WeekLow, percentDifferenceFrom52WeekHigh, spGroup) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            val = (
+                dictionary['symbol'],
+                dictionary['shortName'],
+                dictionary['country'],
+                dictionary['industry'],
+                dictionary['sector'],
+                dictionary['previousClose'],
+                dictionary['beta'],
+                dictionary['trailingPE'],
+                dictionary['forwardPE'],
+                dictionary['volume'],
+                dictionary['averageVolume'],
+                dictionary['averageVolume10days'],
+                dictionary['marketCap'],
+                dictionary['fiftyTwoWeekLow'],
+                dictionary['fiftyTwoWeekHigh'],
+                dictionary['fiftyDayAverage'],
+                dictionary['twoHundredDayAverage'],
+                dictionary['bookValue'],
+                dictionary['priceToBook'],
+                dictionary['52WeekChange'],
+                dictionary['percentDifferenceFrom52WeekLow'],
+                dictionary['percentDifferenceFrom52WeekHigh'],
+                dictionary['spGroup']
+            )
+            self.mycursor.execute(sql, val)
+            self.mydb.commit()
 
-mycursor.execute("DROP TABLE IF EXISTS stockPrices")
-mycursor.execute(
-    "CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT)")
+    def create_csv_stockdata(self):
+        with open('stockData.csv', mode='w', newline='') as stockDataFile:
+            writer = csv.DictWriter(stockDataFile, fieldnames=self.stock_data[0].keys(), delimiter=';')
+            writer.writeheader()
+            for data in self.stock_data:
+                writer.writerow(data)
+    def create_table_stockprices(self):
+        self.mycursor.execute("DROP TABLE IF EXISTS stockPrices")
+        self.mycursor.execute(
+            "CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT)")
 
-today = datetime.date.today()
-start = today - datetime.timedelta(days=365)
-end = today.strftime('%Y-%m-%d')
+        today = datetime.date.today()
+        start = today - datetime.timedelta(days=365)
+        end = today.strftime('%Y-%m-%d')
 
-fieldnames = ['date', 'symbol', 'open', 'high', 'low', 'close', 'adjustedClose', 'volume']
-tickers_list = Tickers().get_tickers_list("sp500_tickers")
-with open('stockPrices.csv', mode='w', newline='') as csvfile:
-    csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=';')
-    csv_writer.writeheader()
+        fieldnames = ['date', 'symbol', 'open', 'high', 'low', 'close', 'adjustedClose', 'volume']
+        tickers_list = Tickers().get_tickers_list("sp500_tickers")
+        with open('stockPrices.csv', mode='w', newline='') as csvfile:
+            csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=';')
+            csv_writer.writeheader()
 
-    for company in tickers_list:
-        data = yf.download(company, start=start, end=end)
-        for index, row in data.iterrows():
-            insert_query = "INSERT INTO stockPrices (date, symbol, open, high, low, close, adjustedClose, volume) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-            insert_values = (
-                index.strftime('%Y-%m-%d'), company, float(row['Open']), float(row['High']), float(row['Low']),
-                float(row['Close']), float(row['Adj Close']), int(row['Volume']))
-            mycursor.execute(insert_query, insert_values)
+            for company in tickers_list:
+                data = yf.download(company, start=start, end=end)
+                for index, row in data.iterrows():
+                    insert_query = "INSERT INTO stockPrices (date, symbol, open, high, low, close, adjustedClose, volume) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                    insert_values = (
+                        index.strftime('%Y-%m-%d'), company, float(row['Open']), float(row['High']), float(row['Low']),
+                        float(row['Close']), float(row['Adj Close']), int(row['Volume']))
+                    self.mycursor.execute(insert_query, insert_values)
 
-            csv_writer.writerow({
-                'date': index.strftime('%Y-%m-%d'),
-                'symbol': company,
-                'open': float(row['Open']),
-                'high': float(row['High']),
-                'low': float(row['Low']),
-                'close': float(row['Close']),
-                'adjustedClose': float(row['Adj Close']),
-                'volume': int(row['Volume'])
-            })
-        mydb.commit()
+                    csv_writer.writerow({
+                        'date': index.strftime('%Y-%m-%d'),
+                        'symbol': company,
+                        'open': float(row['Open']),
+                        'high': float(row['High']),
+                        'low': float(row['Low']),
+                        'close': float(row['Close']),
+                        'adjustedClose': float(row['Adj Close']),
+                        'volume': int(row['Volume'])
+                    })
+                self.mydb.commit()
+
+
+a = DatabaseTables('sp500_tickers')
