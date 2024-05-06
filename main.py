@@ -20,6 +20,9 @@ class Tickers:
         self.ai_stocks = ["NVDA", "ARM", "AMD", "META", "GOOGL", "MSFT", "SMCI", "CRM", "ADBE", "GOAI", "AIAI.L",
                           "WTAI"]
         self.obesity_drugs = ["NVO", "LLY"]
+        self.sp500_tickers = None
+        self.sp400_tickers = None
+        self.sp600_tickers = None
 
     def __str__(self):
         return "Available tickers' lists are: 'sp500_tickers', 'sp400_tickers', 'sp600_tickers', 'sp_1500', " \
@@ -27,32 +30,23 @@ class Tickers:
 
     def get_tickers_list(self, type: str):
         if type == 'sp500_tickers':
-            sp500_tickers = pd.read_html(self.sp500url)[0]['Symbol'].tolist()
-            for i in range(len(sp500_tickers)):
-                if "." not in sp500_tickers[i]:
-                    continue
-                else:
-                    sp500_tickers[i] = sp500_tickers[i].replace(".", "-")
-            return sp500_tickers
+            if self.sp500_tickers is None:
+                self.sp500_tickers = pd.read_html(self.sp500url)[0]['Symbol'].tolist()
+                self.sp500_tickers = [ticker.replace(".", "-") for ticker in self.sp500_tickers]
+            return self.sp500_tickers
         elif type == 'sp400_tickers':
-            sp400_tickers = pd.read_html(self.sp400url)[0]['Symbol'].tolist()
-            for i in range(len(sp400_tickers)):
-                if "." not in sp400_tickers[i]:
-                    continue
-                else:
-                    sp400_tickers[i] = sp400_tickers[i].replace(".", "-")
-            return sp400_tickers
+            if self.sp400_tickers is None:
+                self.sp400_tickers = pd.read_html(self.sp400url)[0]['Symbol'].tolist()
+                self.sp400_tickers = [ticker.replace(".", "-") for ticker in self.sp400_tickers]
+            return self.sp400_tickers
         elif type == 'sp600_tickers':
-            sp600_tickers = pd.read_html(self.sp600url)[0]['Symbol'].tolist()
-            for i in range(len(sp600_tickers)):
-                if "." not in sp600_tickers[i]:
-                    continue
-                else:
-                    sp600_tickers[i] = sp600_tickers[i].replace(".", "-")
-            return sp600_tickers
+            if self.sp600_tickers is None:
+                self.sp600_tickers = pd.read_html(self.sp600url)[0]['Symbol'].tolist()
+                self.sp600_tickers = [ticker.replace(".", "-") for ticker in self.sp600_tickers]
+            return self.sp600_tickers
         elif type == 'sp_1500':
-            return (self.get_tickers_list('sp500_tickers') + self.get_tickers_list(
-                'sp400_tickers') + self.get_tickers_list('sp600_tickers'))
+            return self.get_tickers_list('sp500_tickers') + self.get_tickers_list(
+                'sp400_tickers') + self.get_tickers_list('sp600_tickers')
         elif type == 'magnificent_seven':
             return self.magnificent_seven
         elif type == 'bitcoin':
@@ -66,7 +60,6 @@ class Tickers:
         elif type == 'big_list':
             return list(set((self.get_tickers_list(
                 'sp_1500') + self.magnificent_seven + self.bitcoin + self.meme_stocks + self.ai_stocks + self.obesity_drugs)))
-
 
 # Defining class StockData that is used to get data from yfinance.info into the list of dictionaries for the first table------------------------------------------
 
@@ -121,8 +114,6 @@ class GetStockData:
                 temporary_dictionary['spGroup'] = 'Other'
 
             self.stock_data.append(temporary_dictionary)
-            if temporary_dictionary['symbol'] is None:
-                print(temporary_dictionary, len(self.stock_data))
 
 
 # Defining class DatabaseTables that is used to write the data to two database tables and also to csv files-------------
