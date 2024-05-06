@@ -99,11 +99,14 @@ for ticker in tickers_list:
         'fiftyTwoWeekHigh'] - 1
     temporary_dictionary['percentDifferenceFrom52WeekLow'] = percent_difference_from_52_week_low
     temporary_dictionary['percentDifferenceFrom52WeekHigh'] = percent_difference_from_52_week_high
-    if ticker in Tickers().get_tickers_list("sp500_tickers"):
+    sp500_tickers = Tickers().get_tickers_list("sp500_tickers")
+    sp400_tickers = Tickers().get_tickers_list("sp400_tickers")
+    sp600_tickers = Tickers().get_tickers_list("sp600_tickers")
+    if ticker in sp500_tickers:
         temporary_dictionary['spGroup'] = '500'
-    elif ticker in Tickers().get_tickers_list("sp400_tickers"):
+    elif ticker in sp400_tickers:
         temporary_dictionary['spGroup'] = '400'
-    elif ticker in Tickers().get_tickers_list("sp600_tickers"):
+    elif ticker in sp600_tickers:
         temporary_dictionary['spGroup'] = '600'
     else:
         temporary_dictionary['spGroup'] = 'Other'
