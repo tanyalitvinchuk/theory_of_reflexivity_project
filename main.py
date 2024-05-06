@@ -6,6 +6,66 @@ import csv
 import mysql.connector
 import datetime
 
+
+# Defining class Tickers that is used to return lists of tickers ----------------------------------------------------------------------------------------------------------------------
+class Tickers:
+    def __init__(self):
+        self.sp500url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+        self.sp400url = 'https://en.wikipedia.org/wiki/List_of_S%26P_400_companies'
+        self.sp600url = 'https://en.wikipedia.org/wiki/List_of_S%26P_600_companies'
+        self.magnificent_seven = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"]
+        self.bitcoin = ["GBTC", "IBIT", "FBTC", "ARKB", "BITB", "BTCO", "HODL", "BRRR", "MARA", "COIN", "MSTR"]
+        self.meme_stocks = ["DJT", "AISP", "NKLA", "RDDT", "CVNA"]
+        self.ai_stocks = ["NVDA", "ARM", "AMD", "META", "GOOGL", "MSFT", "SMCI", "CRM", "ADBE", "GOAI", "AIAI.L",
+                          "WTAI"]
+        self.obesity_drugs = ["NVO", "LLY"]
+
+    def __str__(self):
+        return "Available tickers' lists are: 'sp500_tickers', 'sp400_tickers', 'sp600_tickers', 'sp_1500', " \
+               "'magnificent_seven', 'bitcoin', 'meme_stocks','ai_stocks','obesity_drugs'"
+
+    def get_tickers_list(self, type: str):
+        if type == 'sp500_tickers':
+            sp500_tickers = pd.read_html(self.sp500url)[0]['Symbol'].tolist()
+            for i in range(len(sp500_tickers)):
+                if "." not in sp500_tickers[i]:
+                    continue
+                else:
+                    sp500_tickers[i] = sp500_tickers[i].replace(".", "-")
+            return sp500_tickers
+        elif type == 'sp400_tickers':
+            sp400_tickers = pd.read_html(self.sp400url)[0]['Symbol'].tolist()
+            for i in range(len(sp400_tickers)):
+                if "." not in sp400_tickers[i]:
+                    continue
+                else:
+                    sp400_tickers[i] = sp400_tickers[i].replace(".", "-")
+            return sp400_tickers
+        elif type == 'sp600_tickers':
+            sp600_tickers = pd.read_html(self.sp600url)[0]['Symbol'].tolist()
+            for i in range(len(sp600_tickers)):
+                if "." not in sp600_tickers[i]:
+                    continue
+                else:
+                    sp600_tickers[i] = sp600_tickers[i].replace(".", "-")
+            return sp600_tickers
+        elif type == 'sp_1500':
+            return (self.get_tickers_list('sp500_tickers') + self.get_tickers_list(
+                'sp400_tickers') + self.get_tickers_list('sp600_tickers'))
+        elif type == 'magnificent_seven':
+            return self.magnificent_seven
+        elif type == 'bitcoin':
+            return self.bitcoin
+        elif type == 'meme_stocks':
+            return self.meme_stocks
+        elif type == 'ai_stocks':
+            return self.ai_stocks
+        elif type == 'obesity_drugs':
+            return self.obesity_drugs
+        elif type == 'big_list':
+            return list(set((self.get_tickers_list(
+                'sp_1500') + self.magnificent_seven + self.bitcoin + self.meme_stocks + self.ai_stocks + self.obesity_drugs)))
+
 # Tickers' Lists ---------------------------------------------------------------------------------------
 
 # S&P 500 tickers
