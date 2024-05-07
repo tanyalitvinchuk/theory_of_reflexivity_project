@@ -122,7 +122,7 @@ class GetStockData:
 class DatabaseTables:
     def __init__(self,type):
         self.stock_data = GetStockData(type).stock_data
-        
+
         self.mydb = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -190,12 +190,12 @@ class DatabaseTables:
         end = today.strftime('%Y-%m-%d')
 
         fieldnames = ['date', 'symbol', 'open', 'high', 'low', 'close', 'adjustedClose', 'volume', 'fiftyTwoWeekLow', 'fiftyTwoWeekHigh', 'percentDifferenceFrom52WeekLow', 'percentDifferenceFrom52WeekHigh']
-        tickers_list = Tickers().get_tickers_list(tickers)
+        #tickers_list = Tickers().get_tickers_list(tickers)
         with open('stockPrices.csv', mode='w', newline='') as csvfile:
             csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=';')
             csv_writer.writeheader()
 
-            for company in tickers_list:
+            for company in self.stock_data.keys():
                 data = yf.download(company, start=start)
                 fiftyTwoWeekLow = float(self.stock_data[company]['fiftyTwoWeekLow'])
                 fiftyTwoWeekHigh = float(self.stock_data[company]['fiftyTwoWeekHigh'])
