@@ -196,7 +196,7 @@ class DatabaseTables:
             csv_writer.writeheader()
 
             for company in tickers_list:
-                data = yf.download(company, start=start, end=end)
+                data = yf.download(company, start=start)
                 fiftyTwoWeekLow = float(self.stock_data[company]['fiftyTwoWeekLow'])
                 fiftyTwoWeekHigh = float(self.stock_data[company]['fiftyTwoWeekHigh'])
 
