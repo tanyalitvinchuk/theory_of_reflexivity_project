@@ -1,11 +1,22 @@
 import mysql.connector
 
+def read_secrets(filename=".secrets"):
+    """Read database configuration from a .secrets file."""
+    params = {}
+    with open(filename, 'r') as file:
+        for line in file:
+            key, value = line.strip().split('=')
+            params[key] = value
+    return params
+
 def create_database_connection():
+    # Read database parameters from the .secrets file
+    config = read_secrets()
     mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="your_password",  # Update with your actual password
-        database="your_database"  # Update with your actual database name
+        host=config['host'],
+        user=config['user'],
+        password=config['password'],
+        database=config['database']
     )
     return mydb
 
