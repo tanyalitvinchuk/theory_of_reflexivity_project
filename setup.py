@@ -1,6 +1,6 @@
 import mysql.connector
 
-def read_secrets(filename=".secrets"):
+def read_secrets(filename=".secret"):
     """Read database configuration from a .secrets file."""
     params = {}
     with open(filename, 'r') as file:
