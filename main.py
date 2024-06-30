@@ -239,9 +239,7 @@ class DatabaseTables:
             # Calculate intraday volatility
             data['Intraday_Volatility'] = (data['High'] - data['Low']) / data['Low'] * 100
             data.dropna(inplace=True)
-            data.info()
-            print(data)
-
+            
             for index, row in data.iterrows():
                 insert_query = "INSERT INTO stockPrices (Symbol, Date, Open, High, Low, Close, Adj_Close, Volume, " \
                                "3_Month_Low, 3_Month_High, Percent_Diff_3M_Low, Percent_Diff_3M_High, 1_Month_Low, " \
