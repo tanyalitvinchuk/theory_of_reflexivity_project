@@ -2,9 +2,8 @@
 
 import yfinance as yf
 import pandas as pd
-import csv
 import mysql.connector
-import datetime
+from datetime import datetime, timedelta
 
 
 # Defining class Tickers that is used to return lists of tickers-----------------------------------------------------
@@ -19,7 +18,7 @@ class Tickers:
         self.meme_stocks = ["DJT", "AISP", "NKLA", "RDDT", "CVNA"]
         self.ai_stocks = ["NVDA", "ARM", "AMD", "META", "GOOGL", "MSFT", "SMCI", "CRM", "ADBE", "GOAI", "WTAI"]
         self.obesity_drugs = ["NVO", "LLY"]
-        self.other_tickers = ['TMST','AMEH','TSLA','AAPL'] # For checking some tickers
+        self.other_tickers = ['PTON','HUMA']
         self.tickers_cache = {}
 
     def __str__(self):
@@ -42,7 +41,7 @@ class Tickers:
         elif type == 'sp_1500':
             return self.get_tickers_list('sp500_tickers') + self.get_tickers_list('sp400_tickers') + self.get_tickers_list('sp600_tickers')
         elif type == 'big_list':
-            return list(set(self.get_tickers_list('sp_1500') + self.magnificent_seven + self.bitcoin + self.meme_stocks + self.ai_stocks + self.obesity_drugs))
+            return list(set(self.get_tickers_list('sp_1500') + self.magnificent_seven + self.bitcoin + self.meme_stocks + self.ai_stocks + self.obesity_drugs + self.other_tickers))
         else:
             return getattr(self, type, [])
 
@@ -126,13 +125,12 @@ class DatabaseTables:
         self.mydb = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="ukrainewillwin",
+            password="password",
             database="mydatabase"
         )
         self.mycursor = self.mydb.cursor()
 
         self.create_table_stockdata()
-        self.create_csv_stockdata()
         self.create_table_stockprices()
 
 
@@ -142,10 +140,17 @@ class DatabaseTables:
         self.mycursor.execute("DROP TABLE IF EXISTS stockData")
         self.mycursor.execute("SET FOREIGN_KEY_CHECKS = 1")
         self.mycursor.execute(
-            "CREATE TABLE stockData (symbol VARCHAR(255) PRIMARY KEY, shortName VARCHAR(255), country VARCHAR(255), industry VARCHAR(255), sector VARCHAR(255), previousClose DECIMAL(10,4), beta DECIMAL(10,4), trailingPE DECIMAL(10,4), forwardPE DECIMAL(10,4), volume BIGINT, averageVolume BIGINT, averageVolume10days BIGINT, marketCap BIGINT, fiftyTwoWeekLow DECIMAL(10,4), fiftyTwoWeekHigh DECIMAL(10,4), fiftyDayAverage DECIMAL(10,4), twoHundredDayAverage DECIMAL(10,4), bookValue DECIMAL(10,4), priceToBook DECIMAL(10,4), 52WeekChange DECIMAL(10,4), percentDifferenceFrom52WeekLow DECIMAL(10,4), percentDifferenceFrom52WeekHigh DECIMAL(10,4), spGroup VARCHAR(255))")
+            "CREATE TABLE stockData (symbol VARCHAR(255) PRIMARY KEY, shortName VARCHAR(255), country VARCHAR(255), "
+            "industry VARCHAR(255), sector VARCHAR(255), previousClose DECIMAL(10,4), beta DECIMAL(10,4), trailingPE "
+            "DECIMAL(10,4), forwardPE DECIMAL(10,4), volume BIGINT, averageVolume BIGINT, averageVolume10days BIGINT, "
+            "marketCap BIGINT, fiftyTwoWeekLow DECIMAL(10,4), fiftyTwoWeekHigh DECIMAL(10,4), fiftyDayAverage "
+            "DECIMAL(10,4), twoHundredDayAverage DECIMAL(10,4), bookValue DECIMAL(10,4), priceToBook DECIMAL(10,4), "
+            "52WeekChange DECIMAL(10,4), percentDifferenceFrom52WeekLow DECIMAL(10,4), "
+            "percentDifferenceFrom52WeekHigh DECIMAL(10,4), spGroup VARCHAR(255))")
 
         for dictionary in self.stock_data.values():
-            sql = "INSERT INTO stockData (symbol, shortName, country, industry, sector, previousClose, beta, trailingPE, forwardPE, volume, averageVolume, averageVolume10days, marketCap, fiftyTwoWeekLow, fiftyTwoWeekHigh, fiftyDayAverage, twoHundredDayAverage, bookValue, priceToBook, 52WeekChange, percentDifferenceFrom52WeekLow, percentDifferenceFrom52WeekHigh, spGroup) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            sql = "INSERT INTO stockData VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
+                  "%s, %s, %s, %s, %s, %s)"
             val = (
                 dictionary['symbol'],
                 dictionary['shortName'],
@@ -174,55 +179,84 @@ class DatabaseTables:
             self.mycursor.execute(sql, val)
             self.mydb.commit()
 
-    def create_csv_stockdata(self):
-        with open('stockData.csv', mode='w', newline='') as stockDataFile:
-            writer = csv.DictWriter(stockDataFile, fieldnames=list(self.stock_data.values())[0].keys(), delimiter=';')
-            writer.writeheader()
-            for data in self.stock_data.values():
-                writer.writerow(data)
     def create_table_stockprices(self):
         self.mycursor.execute("DROP TABLE IF EXISTS stockPrices")
-        self.mycursor.execute(
-            "CREATE TABLE stockPrices (id INT AUTO_INCREMENT PRIMARY KEY, date DATE, symbol VARCHAR(255), open DECIMAL(10,4), high DECIMAL(10,4), low DECIMAL(10,4), close DECIMAL(10,4), adjustedClose DECIMAL(10,4), volume BIGINT, fiftyTwoWeekLow DECIMAL(10,4), fiftyTwoWeekHigh DECIMAL(10,4), percentDifferenceFrom52WeekLow DECIMAL(10,4), percentDifferenceFrom52WeekHigh DECIMAL(10,4))")
+        self.mycursor.execute("CREATE TABLE stockPrices (Symbol VARCHAR(255), Date DATE, Open DECIMAL(10, 2), "
+                              "High DECIMAL(10, 2), Low DECIMAL(10, 2), Close DECIMAL(10, 2), Adj_Close DECIMAL(10, "
+                              "2), Volume BIGINT, 3_Month_Low DECIMAL(10, 2), 3_Month_High DECIMAL(10, 2), "
+                              "Percent_Diff_3M_Low DECIMAL(10, 2), Percent_Diff_3M_High DECIMAL(10, 2), 1_Month_Low "
+                              "DECIMAL(10, 2), 1_Month_High DECIMAL(10, 2), Percent_Diff_1M_Low DECIMAL(10, 2), "
+                              "Percent_Diff_1M_High DECIMAL(10, 2), Percent_Change DECIMAL(10, 2), "
+                              "Intraday_Volatility DECIMAL(10, 2), PRIMARY KEY (Symbol, Date))")
+        today = datetime.today()
+        two_years_ago = today - timedelta(days=2 * 365)
+        for company in self.stock_data.keys():
+            data = yf.download(company,start=two_years_ago)
 
-        today = datetime.date.today()
-        start = today - datetime.timedelta(days=365)
-        end = today.strftime('%Y-%m-%d')
+            # Ensure that the data is sorted by date
+            data = data.sort_index()
 
-        fieldnames = ['date', 'symbol', 'open', 'high', 'low', 'close', 'adjustedClose', 'volume', 'fiftyTwoWeekLow', 'fiftyTwoWeekHigh', 'percentDifferenceFrom52WeekLow', 'percentDifferenceFrom52WeekHigh']
-        #tickers_list = Tickers().get_tickers_list(tickers)
-        with open('stockPrices.csv', mode='w', newline='') as csvfile:
-            csv_writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=';')
-            csv_writer.writeheader()
+            # Calculate the 52-week low (52 weeks = 252 trading days)
+            data['52_Week_Low'] = data['Low'].rolling(window=252, min_periods=1).min()
 
-            for company in self.stock_data.keys():
-                data = yf.download(company, start=start)
-                fiftyTwoWeekLow = float(self.stock_data[company]['fiftyTwoWeekLow'])
-                fiftyTwoWeekHigh = float(self.stock_data[company]['fiftyTwoWeekHigh'])
+            # Calculate the 52-week high (52 weeks = 252 trading days)
+            data['52_Week_High'] = data['High'].rolling(window=252, min_periods=1).max()
 
-                for index, row in data.iterrows():
-                    percentDifferenceFrom52WeekLow = (float(row['Close']) / fiftyTwoWeekLow) - 1
-                    percentDifferenceFrom52WeekHigh = (float(row['Close']) / fiftyTwoWeekHigh) - 1
-                    insert_query = "INSERT INTO stockPrices (date, symbol, open, high, low, close, adjustedClose, volume, fiftyTwoWeekLow, fiftyTwoWeekHigh, percentDifferenceFrom52WeekLow, percentDifferenceFrom52WeekHigh) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                    insert_values = (
-                        index.strftime('%Y-%m-%d'), company, float(row['Open']), float(row['High']), float(row['Low']),
-                        float(row['Close']), float(row['Adj Close']), int(row['Volume']), fiftyTwoWeekLow, fiftyTwoWeekHigh, percentDifferenceFrom52WeekLow, percentDifferenceFrom52WeekHigh)
-                    self.mycursor.execute(insert_query, insert_values)
+            # Calculate Percent_Diff_From_52_Week_Low
+            data['Percent_Diff_From_52_Week_Low'] = ((data['Close'] - data['52_Week_Low']) / data['52_Week_Low']) * 100
 
-                    csv_writer.writerow({
-                        'date': index.strftime('%Y-%m-%d'),
-                        'symbol': company,
-                        'open': float(row['Open']),
-                        'high': float(row['High']),
-                        'low': float(row['Low']),
-                        'close': float(row['Close']),
-                        'adjustedClose': float(row['Adj Close']),
-                        'volume': int(row['Volume']),
-                        'fiftyTwoWeekLow': fiftyTwoWeekLow,
-                        'fiftyTwoWeekHigh': fiftyTwoWeekHigh,
-                        'percentDifferenceFrom52WeekLow': percentDifferenceFrom52WeekLow,
-                        'percentDifferenceFrom52WeekHigh': percentDifferenceFrom52WeekHigh
-                    })
+            # Calculate Percent_Diff_From_52_Week_High
+            data['Percent_Diff_From_52_Week_High'] = ((data['Close'] - data['52_Week_High']) / data[
+                '52_Week_High']) * 100
+
+            # Calculate the 50-day moving average
+            data['50_Day_MA'] = data['Close'].rolling(window=50, min_periods=1).mean()
+
+            # Calculate the 200-day moving average
+            data['200_Day_MA'] = data['Close'].rolling(window=200, min_periods=1).mean()
+
+            # Calculate the 10-day average volume
+            data['10_Day_Avg_Volume'] = data['Volume'].rolling(window=10, min_periods=1).mean()
+
+            # Calculate the 30-day average volume
+            data['30_Day_Avg_Volume'] = data['Volume'].rolling(window=30, min_periods=1).mean()
+            data['3_Month_Low'] = data['Low'].rolling(window=63,
+                                                      min_periods=1).min()  # Approximately 63 trading days in 3 months
+            data['3_Month_High'] = data['High'].rolling(window=63, min_periods=1).max()
+            data['1_Month_Low'] = data['Low'].rolling(window=21,
+                                                      min_periods=1).min()  # Approximately 21 trading days in 1 month
+            data['1_Month_High'] = data['High'].rolling(window=21, min_periods=1).max()
+
+            # Calculate percent differences
+            data['Percent_Diff_3M_Low'] = (data['Close'] - data['3_Month_Low']) / data['3_Month_Low'] * 100
+            data['Percent_Diff_3M_High'] = (data['Close'] - data['3_Month_High']) / data['3_Month_High'] * 100
+            data['Percent_Diff_1M_Low'] = (data['Close'] - data['1_Month_Low']) / data['1_Month_Low'] * 100
+            data['Percent_Diff_1M_High'] = (data['Close'] - data['1_Month_High']) / data['1_Month_High'] * 100
+
+            # Calculate % change from the previous trading day
+            data['Percent_Change'] = data['Close'].pct_change() * 100
+
+            # Calculate intraday volatility
+            data['Intraday_Volatility'] = (data['High'] - data['Low']) / data['Low'] * 100
+            data.dropna(inplace=True)
+            data.info()
+            print(data)
+
+            for index, row in data.iterrows():
+                insert_query = "INSERT INTO stockPrices (Symbol, Date, Open, High, Low, Close, Adj_Close, Volume, " \
+                               "3_Month_Low, 3_Month_High, Percent_Diff_3M_Low, Percent_Diff_3M_High, 1_Month_Low, " \
+                               "1_Month_High, Percent_Diff_1M_Low, Percent_Diff_1M_High, Percent_Change, " \
+                               "Intraday_Volatility) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
+                               "%s, %s, %s, %s)"
+                insert_values = (
+                    company, index.strftime('%Y-%m-%d'),
+                    row['Open'], row['High'], row['Low'], row['Close'], row['Adj Close'], row['Volume'],
+                    row['3_Month_Low'], row['3_Month_High'], row['Percent_Diff_3M_Low'], row['Percent_Diff_3M_High'],
+                    row['1_Month_Low'], row['1_Month_High'], row['Percent_Diff_1M_Low'], row['Percent_Diff_1M_High'],
+                    row['Percent_Change'], row['Intraday_Volatility']
+                )
+
+                self.mycursor.execute(insert_query, insert_values)
                 self.mydb.commit()
 
 
