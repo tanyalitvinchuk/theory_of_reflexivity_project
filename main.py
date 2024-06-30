@@ -186,8 +186,11 @@ class DatabaseTables:
                               "2), Volume BIGINT, 3_Month_Low DECIMAL(10, 2), 3_Month_High DECIMAL(10, 2), "
                               "Percent_Diff_3M_Low DECIMAL(10, 2), Percent_Diff_3M_High DECIMAL(10, 2), 1_Month_Low "
                               "DECIMAL(10, 2), 1_Month_High DECIMAL(10, 2), Percent_Diff_1M_Low DECIMAL(10, 2), "
-                              "Percent_Diff_1M_High DECIMAL(10, 2), Percent_Change DECIMAL(10, 2), "
-                              "Intraday_Volatility DECIMAL(10, 2), PRIMARY KEY (Symbol, Date))")
+                              "Percent_Diff_1M_High DECIMAL(10, 2), 52_Week_Low DECIMAL(10, 2), 52_Week_High DECIMAL("
+                              "10, 2), Percent_Diff_From_52_Week_Low DECIMAL(10, 2), Percent_Diff_From_52_Week_High "
+                              "DECIMAL(10, 2), 50_Day_MA DECIMAL(10, 2), 200_Day_MA DECIMAL(10, 2), 10_Day_Avg_Volume "
+                              "BIGINT, 30_Day_Avg_Volume BIGINT, Percent_Change DECIMAL(10, 2), Intraday_Volatility "
+                              "DECIMAL(10, 2), PRIMARY KEY (Symbol, Date))")
         today = datetime.today()
         two_years_ago = today - timedelta(days=2 * 365)
         for company in self.stock_data.keys():
@@ -238,19 +241,26 @@ class DatabaseTables:
 
             # Calculate intraday volatility
             data['Intraday_Volatility'] = (data['High'] - data['Low']) / data['Low'] * 100
+
             data.dropna(inplace=True)
-            
+            data.info()
+            print(data)
+
             for index, row in data.iterrows():
                 insert_query = "INSERT INTO stockPrices (Symbol, Date, Open, High, Low, Close, Adj_Close, Volume, " \
                                "3_Month_Low, 3_Month_High, Percent_Diff_3M_Low, Percent_Diff_3M_High, 1_Month_Low, " \
-                               "1_Month_High, Percent_Diff_1M_Low, Percent_Diff_1M_High, Percent_Change, " \
-                               "Intraday_Volatility) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
-                               "%s, %s, %s, %s)"
+                               "1_Month_High, Percent_Diff_1M_Low, Percent_Diff_1M_High, 52_Week_Low, 52_Week_High, " \
+                               "Percent_Diff_From_52_Week_Low, Percent_Diff_From_52_Week_High, 50_Day_MA, 200_Day_MA, " \
+                               "10_Day_Avg_Volume, 30_Day_Avg_Volume, Percent_Change, Intraday_Volatility) VALUES " \
+                               "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 insert_values = (
                     company, index.strftime('%Y-%m-%d'),
                     row['Open'], row['High'], row['Low'], row['Close'], row['Adj Close'], row['Volume'],
                     row['3_Month_Low'], row['3_Month_High'], row['Percent_Diff_3M_Low'], row['Percent_Diff_3M_High'],
                     row['1_Month_Low'], row['1_Month_High'], row['Percent_Diff_1M_Low'], row['Percent_Diff_1M_High'],
+                    row['52_Week_Low'], row['52_Week_High'], row['Percent_Diff_From_52_Week_Low'],
+                    row['Percent_Diff_From_52_Week_High'],
+                    row['50_Day_MA'], row['200_Day_MA'], row['10_Day_Avg_Volume'], row['30_Day_Avg_Volume'],
                     row['Percent_Change'], row['Intraday_Volatility']
                 )
 
